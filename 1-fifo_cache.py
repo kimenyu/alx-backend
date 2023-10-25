@@ -21,7 +21,8 @@ self.cache_data, return None.
 BaseCaching = __import__('base_caching').BaseCaching
 
 
-class BasicCache(BaseCaching):
+from collections import deque
+class FIFOCache(BaseCaching):
     """_summary_
     """
 
@@ -29,18 +30,26 @@ class BasicCache(BaseCaching):
         """_summary_
         """
         super().__init__()
+        self.key_order = deque()
+
 
     def put(self, key, item):
         """_summary_
 
         Args:
-                key (_type_): _description_
-                item (_type_): _description_
+            key (_type_): _description_
+            item (_type_): _description_
         """
         if key is None or item is None:
-            pass
-        else:
-            self.cache_data[key] = item
+            return
+
+        if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+            removed_key = self.key_order.popleft()
+            self.cache_data.pop(removed_key)
+            print(f"DISCARD: {removed_key}")
+
+        self.cache_data[key] = item
+        self.key_order.append(key)
 
     def get(self, key):
         """return the value in self.cache_data linked to key
